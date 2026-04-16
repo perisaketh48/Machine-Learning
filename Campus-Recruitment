@@ -1,0 +1,153 @@
+"""
+Campus Placement Prediction (ML Project)
+
+* Built a classification model to predict student placement (Placed / Not Placed)
+* Dataset: 215 samples
+
+Preprocessing:
+
+* Dropped 'sl_no' and 'salary' (data leakage)
+* Binary encoding: gender, workex, ssc_b, hsc_b, specialisation
+* One-hot encoding: hsc_s, degree_t
+* Feature scaling: StandardScaler (for SVM, Logistic Regression)
+
+Models Used:
+
+* Logistic Regression
+* SVM (Best Model)
+* Random Forest
+
+Evaluation:
+
+* Stratified 10-Fold Cross Validation
+* Metrics: Precision, Recall, F1 Score
+
+Results:
+
+* Logistic Regression → F1: 0.902
+* SVM → F1: 0.915 (Best)
+* Random Forest → F1: 0.896
+
+Testing:
+
+* Strong case → predicted correctly (Placed)
+* Weak case → predicted correctly (Not Placed)
+* Tricky & borderline cases → used to analyze model behavior
+
+Insight:
+
+* SVM performed best with highest F1 score
+* Model works well but has uncertainty in edge cases
+  """
+
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.model_selection import cross_validate, StratifiedKFold
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+
+# Load Data
+
+df = pd.read_csv("Placement_Data_Full_Class.csv")
+df = df.drop("sl_no", axis=1)
+
+# Preprocessing
+
+df["salary"].fillna(0, inplace=True)
+
+df["gender"].replace({"M": 1, "F": 0}, inplace=True)
+df["workex"].replace({"Yes": 1, "No": 0}, inplace=True)
+df["ssc_b"].replace({"Central": 1, "Others": 0}, inplace=True)
+df["hsc_b"].replace({"Central": 1, "Others": 0}, inplace=True)
+df["specialisation"].replace({"Mkt&Fin": 1, "Mkt&HR": 0}, inplace=True)
+df["status"].replace({"Placed": 1, "Not Placed": 0}, inplace=True)
+
+# One-hot encoding
+
+encoder = OneHotEncoder(sparse_output=False)
+encoded = encoder.fit_transform(df[['hsc_s', 'degree_t']])
+encoded_cols = encoder.get_feature_names_out(['hsc_s', 'degree_t'])
+
+encoded_df = pd.DataFrame(encoded, columns=encoded_cols, index=df.index)
+
+df = df.drop(['hsc_s', 'degree_t', 'salary'], axis=1)
+df = pd.concat([df, encoded_df], axis=1)
+
+# Split data
+
+X = df.drop("status", axis=1)
+y = df["status"]
+
+# Models
+
+pipe_lr = Pipeline([
+('scaler', StandardScaler()),
+('model', LogisticRegression())
+])
+
+pipe_svm = Pipeline([
+('scaler', StandardScaler()),
+('model', SVC(probability=True))
+])
+
+pipe_rf = Pipeline([
+('model', RandomForestClassifier())
+])
+
+models = {
+"Logistic Regression": pipe_lr,
+"SVM": pipe_svm,
+"Random Forest": pipe_rf
+}
+
+# Cross Validation
+
+skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+scoring = ['precision', 'recall', 'f1']
+
+print("\nModel Performance:\n")
+
+for name, model in models.items():
+scores = cross_validate(model, X, y, cv=skf, scoring=scoring)
+
+```
+print(f"{name}")
+print("Precision:", scores['test_precision'].mean())
+print("Recall   :", scores['test_recall'].mean())
+print("F1 Score :", scores['test_f1'].mean())
+print("-" * 40)
+```
+
+# Train best model
+
+best_model = pipe_svm
+best_model.fit(X, y)
+
+# Prediction function
+
+def predict_student(model, X_columns):
+test_data = pd.DataFrame([{
+'gender': 0, 'ssc_p': 60, 'ssc_b': 1,
+'hsc_p': 60, 'hsc_b': 1,
+'degree_p': 60, 'workex': 0,
+'etest_p': 60, 'specialisation': 0, 'mba_p': 60,
+'hsc_s_Arts': 0, 'hsc_s_Commerce': 1, 'hsc_s_Science': 0,
+'degree_t_Comm&Mgmt': 1, 'degree_t_Others': 0, 'degree_t_Sci&Tech': 0
+}])
+
+```
+test_data = test_data[X_columns]
+
+pred = model.predict(test_data)[0]
+prob = model.predict_proba(test_data)[0]
+
+print("\nPrediction:", "Placed" if pred == 1 else "Not Placed")
+print("Confidence:", prob)
+```
+
+# Run prediction
+
+predict_student(best_model, X.columns)
