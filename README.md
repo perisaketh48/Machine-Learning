@@ -21,8 +21,10 @@ This repo contains a collection of hands-on ML projects where I explore data, bu
 * Model Selection & Comparison
 * Cross Validation (Stratified K-Fold)
 * Evaluation Metrics (Precision, Recall, F1 Score)
+* Handling Imbalanced Data (SMOTE, class_weight)
+* Hyperparameter Tuning (GridSearchCV)
+* Pipeline Building (Scikit-learn & Imbalanced-learn)
 * Avoiding Data Leakage
-* Pipeline Building (Scikit-learn)
 
 ---
 
@@ -41,6 +43,39 @@ This repo contains a collection of hands-on ML projects where I explore data, bu
 
 ---
 
+### 📉 Telco Customer Churn Prediction
+
+* Predicts whether a customer will churn or not
+* Business use-case: Helps companies reduce customer loss
+
+#### 🔍 Key Features:
+
+* Handled missing values (`TotalCharges`)
+* Converted categorical data using **ColumnTransformer + OneHotEncoder**
+* Used **train-test split with stratification**
+* Focused on **Recall** (important for churn detection)
+
+#### ⚙️ Models & Techniques:
+
+* Random Forest Classifier
+* Hyperparameter tuning using **GridSearchCV**
+* Compared 3 approaches:
+
+  1. No class balancing
+  2. `class_weight='balanced'`
+  3. **SMOTE (Oversampling)**
+
+#### 🚀 Advanced Concepts:
+
+* Used **Imbalanced-learn Pipeline** to avoid data leakage
+* Applied SMOTE only on training folds
+* Evaluated using:
+
+  * Confusion Matrix
+  * Classification Report
+
+---
+
 *(More projects will be added here...)*
 
 ---
@@ -50,6 +85,7 @@ This repo contains a collection of hands-on ML projects where I explore data, bu
 * Python 🐍
 * Pandas, NumPy
 * Scikit-learn
+* Imbalanced-learn
 
 ---
 
@@ -78,8 +114,8 @@ To build practical ML solutions while focusing on:
 
 ## 🔥 Future Improvements
 
-* Hyperparameter tuning
-* Model explainability
+* Advanced hyperparameter tuning
+* Model explainability (SHAP, Feature Importance)
 * Deployment (Web Apps / APIs)
 
 ---
